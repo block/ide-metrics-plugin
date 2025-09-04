@@ -1,0 +1,46 @@
+[versions]
+changelog = "2.4.0"
+dependencyAnalysis = "3.0.1"
+develocity = "4.1.1"
+intelliJPlatform = "2.7.0"
+# This is used in build-logic
+java = "17"
+junit = "4.13.2"
+kotlin = "2.2.10"
+ksp = "2.2.10-2.0.2"
+moshi = "1.15.2"
+moshix = "0.31.0"
+okhttp = "5.1.0"
+okio = "3.16.0"
+qodana = "2024.2.3"
+retrofit = "3.0.0"
+truth = "1.4.4"
+wire = "5.3.11"
+
+[libraries]
+dependencyAnalysisPlugin = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version.ref = "dependencyAnalysis" }
+develocityGradlePlugin = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinGradleBom = { module = "org.jetbrains.kotlin:kotlin-gradle-plugins-bom", version.ref = "kotlin" }
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlinStdLib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+moshiKotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp"}
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofitConvertireWire = { module = "com.squareup.retrofit2:converter-wire", version.ref = "retrofit"}
+retrofitMock = { module = "com.squareup.retrofit2:retrofit-mock", version.ref = "retrofit" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
+wireRuntime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
+
+[plugins]
+changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
+dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
+intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
+kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+moshix = { id = "dev.zacsweers.moshix", version.ref = "moshix" }
+qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
+wire = { id = "com.squareup.wire", version.ref = "wire" }
