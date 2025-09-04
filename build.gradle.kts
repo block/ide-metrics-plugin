@@ -19,7 +19,7 @@ val pluginGroup = providers.gradleProperty("pluginGroup").get()
 group = pluginGroup
 version = pluginVersion
 
-val pluginName = "ide-metrics-plugin"
+val pluginName = providers.gradleProperty("pluginName").get()
 val sinceBuildMajorVersion = "251" // corresponds to 2023.3.x versions
 val sinceIdeVersionForVerification = "251.28293.39" // corresponds to the 2025.1.5.1 version
 val untilIdeVersion = providers.gradleProperty("IIC.release.version").get()
