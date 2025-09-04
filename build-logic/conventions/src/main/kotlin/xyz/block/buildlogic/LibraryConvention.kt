@@ -1,9 +1,10 @@
 package xyz.block.buildlogic
 
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinJvm
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import xyz.block.buildlogic.internal.BaseConvention
 
 /**
@@ -24,10 +25,13 @@ public abstract class LibraryConvention : Plugin<Project> {
   }
 
   private fun Project.configurePublishing() {
-    extensions.getByType(PublishingExtension::class.java).publications { container ->
-      container.create("library", MavenPublication::class.java) { pub ->
-        pub.from(components.getAt("java"))
-      }
+    extensions.getByType(MavenPublishBaseExtension::class.java).run {
+      configure(
+        KotlinJvm(
+          javadocJar = JavadocJar.Empty(),
+          sourcesJar = true,
+        )
+      )
     }
   }
 }

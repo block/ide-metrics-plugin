@@ -1,25 +1,21 @@
-name: Test
+name: Release
 
 on:
-  pull_request:
-    paths-ignore:
-      - '*.md'
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       reason:
         description: 'Reason for manual run'
         required: false
 
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  gradle:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
+  publish:
+    name: Publish the IJ Plugin
+    runs-on: ubuntu-latest
+    if: github.repository == 'block/ide-metrics-plugin' && github.ref == 'refs/heads/main'
+
     steps:
       # Free disk space to avoid running into "No space left on device" errors
       # when downloading multiple versions of IntelliJ for plugin verification
@@ -31,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      - name: Setup Java
+      - name: Setup java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
         with:
           distribution: 'zulu'
@@ -43,11 +39,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@ac638b010cf58a27ee6c972d7336334ccaf61c96 # v4
 
-      - name: Check non-IDE plugin
-        run: './gradlew check -x :check -s'
+      - name: Execute check
+        run: './gradlew check -s'
 
-      - name: Check IDE plugin
-        run: './gradlew :check -s'
+      - name: Publish
+        env:
+          JETBRAINS_TOKEN: ${{ secrets.JETBRAINS_MARKETPLACE_SQUARE_PLUGINS }}
+        run: |
+          export IJ_PLUGIN_VERSION=$(git describe --tags --abbrev=0 | sed s,^v,,)
+          echo "IJ_PLUGIN_VERSION=$IJ_PLUGIN_VERSION" >> $GITHUB_ENV
 
-      - name: Dependency Analysis
-        run: './gradlew :buildHealth -s'
+          ./gradlew :publishPlugin

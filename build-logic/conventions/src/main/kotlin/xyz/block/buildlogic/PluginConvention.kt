@@ -1,5 +1,8 @@
 package xyz.block.buildlogic
 
+import com.vanniktech.maven.publish.GradlePlugin
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.plugin.devel.tasks.ValidatePlugins
@@ -25,7 +28,19 @@ public abstract class PluginConvention : Plugin<Project> {
 
     catalog = BuildLogicCatalog(this)
 
+    configurePublishing()
     configureValidation()
+  }
+
+  private fun Project.configurePublishing() {
+    extensions.getByType(MavenPublishBaseExtension::class.java).run {
+      configure(
+        GradlePlugin(
+          javadocJar = JavadocJar.Empty(),
+          sourcesJar = true,
+        )
+      )
+    }
   }
 
   /**

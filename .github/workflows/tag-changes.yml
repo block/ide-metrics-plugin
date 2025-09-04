@@ -1,0 +1,43 @@
+name: Update Version on Changes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 2 * * *' # daily at 2am.
+
+jobs:
+  upgrade:
+    name: Check for updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes # checks if there are changes since the last tag
+        id: check-changes
+        run: |
+          TAG=$(git describe --abbrev=0 --tags)
+          if [ "$(git rev-list -n 1 main)" == "$(git rev-list -n 1 $TAG)" ]; then
+            echo "::set-output name=version::$(echo '')"
+          else
+            VERSION="${TAG#v}"
+            echo "::set-output name=version::$(echo "$VERSION")"
+          fi
+
+      - name: Bump version
+        id: bump-semver
+        uses: actions-ecosystem/action-bump-semver@34e334551143a5301f38c830e44a22273c6ff5c5 # v1
+        if: steps.check-changes.outputs.version != ''
+        with:
+          current_version: ${{ steps.check-changes.outputs.version }}
+          level: patch
+
+      - name: Push tag
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
+        if: steps.check-changes.outputs.version != ''
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: '${{ steps.bump-semver.outputs.new_version }}'
+          release_branches: 'main'
