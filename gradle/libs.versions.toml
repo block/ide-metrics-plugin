@@ -8,6 +8,7 @@ java = "17"
 junit = "4.13.2"
 kotlin = "2.2.10"
 ksp = "2.2.10-2.0.2"
+mavenPublish = "0.34.0"
 moshi = "1.15.2"
 moshix = "0.31.0"
 okhttp = "5.1.0"
@@ -25,6 +26,7 @@ kotlinGradleBom = { module = "org.jetbrains.kotlin:kotlin-gradle-plugins-bom", v
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinStdLib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlinTest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+mavenPublishPlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshiKotlinCodegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp"}
@@ -41,6 +43,7 @@ dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.re
 intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+mavenPublish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 moshix = { id = "dev.zacsweers.moshix", version.ref = "moshix" }
 qodana = { id = "org.jetbrains.qodana", version.ref = "qodana" }
 wire = { id = "com.squareup.wire", version.ref = "wire" }

@@ -56,4 +56,5 @@ dependencies {
 
   implementation(libs.dependencyAnalysisPlugin)
   implementation(libs.kotlinGradlePlugin)
+  implementation(libs.mavenPublishPlugin)
 }

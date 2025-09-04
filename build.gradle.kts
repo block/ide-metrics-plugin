@@ -1,7 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
   alias(libs.plugins.kotlin)
@@ -13,8 +13,17 @@ plugins {
   alias(libs.plugins.wire) apply false
 }
 
-group = providers.gradleProperty("pluginGroup").get()
-version = providers.gradleProperty("pluginVersion").get()
+val pluginVersion = providers.gradleProperty("pluginVersion").get()
+val pluginGroup = providers.gradleProperty("pluginGroup").get()
+
+group = pluginGroup
+version = pluginVersion
+
+val pluginName = "ide-metrics-plugin"
+val sinceBuildMajorVersion = "251" // corresponds to 2023.3.x versions
+val sinceIdeVersionForVerification = "251.28293.39" // corresponds to the 2025.1.5.1 version
+val untilIdeVersion = providers.gradleProperty("IIC.release.version").get()
+val untilBuildMajorVersion = untilIdeVersion.substringBefore('.')
 
 val versionCatalog = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
 val javaVersion = JavaLanguageVersion.of(
@@ -27,15 +36,6 @@ tasks.withType<JavaCompile>().configureEach {
 
 kotlin {
   jvmToolchain(javaVersion.toInt())
-
-  // TODO(tsr): confirm with Josh
-  // compilerOptions {
-  //   jvmTarget.set(JvmTarget.fromTarget(javaVersion))
-  //   freeCompilerArgs.add(
-  //     // https://youtrack.jetbrains.com/issue/KT-49746/Support-Xjdk-release-in-gradle-toolchain#focus=Comments-27-12547382.0-0
-  //     "-Xjdk-release=$javaVersion",
-  //   )
-  // }
 }
 
 repositories {
@@ -64,8 +64,21 @@ dependencies {
 
 // Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
 intellijPlatform {
+  projectName = project.name
+
   pluginConfiguration {
-    version = providers.gradleProperty("pluginVersion")
+    id = pluginGroup // matches src/main/resources/META-INF/plugin.xml => idea-plugin.id
+    name = pluginName
+    version = pluginVersion
+    description = "Sends basic IDE performance telemetry to analytics backend"
+    vendor {
+      name = "Block"
+      url = "https://block.xyz/"
+    }
+    ideaVersion {
+      sinceBuild = sinceBuildMajorVersion
+      untilBuild = "$untilBuildMajorVersion.*"
+    }
 
     // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
     description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
@@ -82,40 +95,27 @@ intellijPlatform {
 
     val changelog = project.changelog // local variable for configuration cache compatibility
     // Get the latest available change notes from the changelog file
-    changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
-      with(changelog) {
-        renderItem(
-          (getOrNull(pluginVersion) ?: getUnreleased())
-            .withHeader(false)
-            .withEmptySections(false),
-          Changelog.OutputType.HTML,
-        )
-      }
-    }
-
-    ideaVersion {
-      sinceBuild = "251"
+    changeNotes = with(changelog) {
+      renderItem(
+        (getOrNull(pluginVersion) ?: getUnreleased())
+          .withHeader(false)
+          .withEmptySections(false),
+        Changelog.OutputType.HTML,
+      )
     }
   }
-
-  signing {
-    certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
-    privateKey = providers.environmentVariable("PRIVATE_KEY")
-    password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
-  }
-
-  publishing {
-    token = providers.environmentVariable("PUBLISH_TOKEN")
-    // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-    // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-    // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-    channels = providers.gradleProperty("pluginVersion")
-      .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
-  }
-
   pluginVerification {
     ides {
       recommended()
+      select {
+        types = listOf(
+          IntelliJPlatformType.IntellijIdeaCommunity,
+          IntelliJPlatformType.IntellijIdeaUltimate,
+          IntelliJPlatformType.AndroidStudio,
+        )
+        sinceBuild = sinceIdeVersionForVerification
+        untilBuild = untilIdeVersion
+      }
     }
   }
 }
@@ -148,12 +148,21 @@ changelog {
 }
 
 tasks {
-  wrapper {
-    gradleVersion = providers.gradleProperty("gradleVersion").get()
+  buildPlugin {
+    archiveBaseName = pluginName
+  }
+
+  check {
+    dependsOn("verifyPlugin")
+  }
+
+  patchPluginXml {
+    version = version
   }
 
   publishPlugin {
     dependsOn(patchChangelog)
+    token = providers.environmentVariable("JETBRAINS_TOKEN") // JETBRAINS_TOKEN env var available in CI
   }
 
   // Convenience tasks
