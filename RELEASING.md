@@ -17,7 +17,7 @@ version is defined as `pluginVersion` in `gradle.properties`.
 1. `git commit -am "chore(gradle): prepare for release x.y.z."`
 1. Publish to Maven Central by invoking the `Publish gradle plugin and dependencies` action on 
    Github.
-1. `git tag -a vx.y.z -m "Version x.y.z."`
+1. `git tag -a vx.y.z-gradle -m "Gradle plugin version x.y.z."`
 1. Update version number `gradle.properties` to next snapshot version (x.y.z-SNAPSHOT)
 1. `git commit -am "chore(gradle): prepare next development version."`
 1. `git push && git push --tags`
