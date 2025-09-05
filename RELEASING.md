@@ -10,12 +10,13 @@ version is defined as `pluginVersion` in `gradle.properties`.
 
 # Releasing Gradle plugin and dependency libraries
 
-1. Update CHANGELOG.
-1. Update README if needed.
+1. Update `gradle-plugin/CHANGELOG.md`.
+1. Update `README.md` if needed.
 1. Bump `publish_version` in `gradle.properties` to next stable version (removing the `-SNAPSHOT` 
    suffix).
 1. `git commit -am "chore(gradle): prepare for release x.y.z."`
-1. Publish the snapshot to Maven Central by invoking the `publish-gradle-plugin` action on Github.
+1. Publish to Maven Central by invoking the `Publish gradle plugin and dependencies` action on 
+   Github.
 1. `git tag -a vx.y.z -m "Version x.y.z."`
 1. Update version number `gradle.properties` to next snapshot version (x.y.z-SNAPSHOT)
 1. `git commit -am "chore(gradle): prepare next development version."`
