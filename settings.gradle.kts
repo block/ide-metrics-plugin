@@ -14,15 +14,23 @@ plugins {
 
 develocity {
   buildScan {
-    // TODO(tsr): re-enable later
-    publishing.onlyIf { false }
+    val scanPublishingProperty = "xyz.block.telemetry.scans.publish"
+    val shouldPublish = providers.gradleProperty(scanPublishingProperty)
+      .map { it.toBoolean() }
+      .getOrElse(false)
+
+    // For open source projects, publishing build scans should be opt-in.
+    publishing.onlyIf {
+      if (shouldPublish) {
+        true
+      } else {
+        logger.lifecycle("To publish build scans, opt-in by setting the gradle property '$scanPublishingProperty=true'")
+        false
+      }
+    }
 
     termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
     termsOfUseAgree = "yes"
-
-    capture {
-      fileFingerprints = true
-    }
   }
 }
 
