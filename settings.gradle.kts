@@ -57,7 +57,10 @@ class ShouldPublish(
   }
 
   override fun isSatisfiedBy(element: PublishingContext): Boolean {
+    // Only publish locally if user opts-in.
     val shouldPublish = providers.gradleProperty(PROP)
+      // always publish from CI
+      .orElse(providers.environmentVariable("CI"))
       .map { it.toBoolean() }
       .getOrElse(false)
 
