@@ -58,6 +58,8 @@ internal class BaseConvention(private val project: Project) {
       coordinates(version = publishVersion)
 
       pom { pom ->
+        pom.name.set(name)
+        pom.description.set("Links Gradle build scan telemetry with IDE telemetry")
         pom.url.set("https://github.com/block/ide-metrics-plugin")
         pom.licenses {
           it.license { l ->
