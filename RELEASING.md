@@ -15,6 +15,7 @@ version is defined as `pluginVersion` in `gradle.properties`.
 1. Bump `publish_version` in `gradle.properties` to next stable version (removing the `-SNAPSHOT` 
    suffix).
 1. `git commit -am "chore(gradle): prepare for release x.y.z."`
+1. Push this as a PR and merge it.
 1. Publish to Maven Central by invoking the `Publish gradle plugin and dependencies` action on 
    Github.
 1. `git tag -a vx.y.z-gradle -m "Gradle plugin version x.y.z."`
