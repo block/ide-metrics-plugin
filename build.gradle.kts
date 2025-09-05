@@ -165,10 +165,8 @@ tasks {
     token = providers.environmentVariable("JETBRAINS_TOKEN") // JETBRAINS_TOKEN env var available in CI
   }
 
-  // Convenience tasks
-  register("publishToMavenLocal") {
-    dependsOn(":common:publishToMavenLocal", ":gradle-plugin:publishToMavenLocal")
-  }
+  // We need the root project to have this task so we can run `./gradlew pTML` to publish all local artifacts.
+  register("publishToMavenLocal")
 }
 
 dependencyAnalysis {

@@ -1,3 +1,5 @@
+import com.gradle.develocity.agent.gradle.scan.BuildScanPublishingConfiguration.PublishingContext
+
 pluginManagement {
   includeBuild("build-logic/conventions")
 
@@ -14,20 +16,8 @@ plugins {
 
 develocity {
   buildScan {
-    val scanPublishingProperty = "xyz.block.telemetry.scans.publish"
-    val shouldPublish = providers.gradleProperty(scanPublishingProperty)
-      .map { it.toBoolean() }
-      .getOrElse(false)
-
     // For open source projects, publishing build scans should be opt-in.
-    publishing.onlyIf {
-      if (shouldPublish) {
-        true
-      } else {
-        logger.lifecycle("To publish build scans, opt-in by setting the gradle property '$scanPublishingProperty=true'")
-        false
-      }
-    }
+    publishing.onlyIf(ShouldPublish(providers, logger))
 
     termsOfUseUrl = "https://gradle.com/help/legal-terms-of-use"
     termsOfUseAgree = "yes"
@@ -56,3 +46,25 @@ include(":common")
 include(":gradle-plugin")
 include(":kotlin-eventstream2:client")
 include(":kotlin-eventstream2:protos")
+
+class ShouldPublish(
+  private val providers: ProviderFactory,
+  private val logger: Logger,
+) : Spec<PublishingContext> {
+
+  private companion object {
+    const val PROP = "xyz.block.telemetry.scans.publish"
+  }
+
+  override fun isSatisfiedBy(element: PublishingContext): Boolean {
+    val shouldPublish = providers.gradleProperty(PROP)
+      .map { it.toBoolean() }
+      .getOrElse(false)
+
+    if (!shouldPublish) {
+      logger.lifecycle("To publish build scans, opt-in by setting the Gradle property '$PROP=true'")
+    }
+
+    return shouldPublish
+  }
+}
