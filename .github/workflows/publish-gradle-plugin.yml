@@ -1,4 +1,4 @@
-name: publish
+name: Publish gradle plugin and dependencies
 
 on:
   workflow_dispatch:
