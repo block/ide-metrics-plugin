@@ -25,10 +25,7 @@ val sinceIdeVersionForVerification = "251.28293.39" // corresponds to the 2025.1
 val untilIdeVersion = providers.gradleProperty("IIC.release.version").get()
 val untilBuildMajorVersion = untilIdeVersion.substringBefore('.')
 
-val versionCatalog = extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
-val javaVersion = JavaLanguageVersion.of(
-  versionCatalog.findVersion("java").orElseThrow().requiredVersion
-).toString()
+val javaVersion = JavaLanguageVersion.of(libs.versions.java.get()).toString()
 
 tasks.withType<JavaCompile>().configureEach {
   options.release = javaVersion.toInt()
