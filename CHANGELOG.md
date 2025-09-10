@@ -2,5 +2,8 @@
 
 # Changelog for `xyz.block.idea.telemetry` (ide-metrics) IDE plugin
 
+## Version 0.2.0
+* [Fix]: Raise min version to 2025.2 to avoid private api lint issue.
+
 ## Version 0.1.0
 * [New] Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
