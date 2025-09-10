@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# Changelog for `xyz.block.idea.telemetry` (ide-metrics) IDE plugin
+# Changelog for `xyz.block.idea.telemetry` (build-sync-metrics) IDE plugin
 
 ## Version 0.2.0
 * [Fix]: Raise min version to 2025.2 to avoid private api lint issue.
