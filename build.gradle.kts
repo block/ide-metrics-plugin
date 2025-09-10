@@ -16,6 +16,8 @@ plugins {
 val pluginVersion = providers.gradleProperty("pluginVersion").get()
 val pluginGroup = providers.gradleProperty("pluginGroup").get()
 
+println("pluginVersion = $pluginVersion")
+
 group = pluginGroup
 version = pluginVersion
 
@@ -90,16 +92,16 @@ intellijPlatform {
       }
     }
 
-    val changelog = project.changelog // local variable for configuration cache compatibility
+    // val changelog = project.changelog // local variable for configuration cache compatibility
     // Get the latest available change notes from the changelog file
-    changeNotes = with(changelog) {
-      renderItem(
-        (getOrNull(pluginVersion) ?: getUnreleased())
-          .withHeader(false)
-          .withEmptySections(false),
-        Changelog.OutputType.HTML,
-      )
-    }
+    // changeNotes = with(changelog) {
+    //   renderItem(
+    //     (getOrNull(pluginVersion) ?: getUnreleased())
+    //       .withHeader(false)
+    //       .withEmptySections(false),
+    //     Changelog.OutputType.HTML,
+    //   )
+    // }
   }
   pluginVerification {
     ides {
