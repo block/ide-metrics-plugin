@@ -20,8 +20,8 @@ group = pluginGroup
 version = pluginVersion
 
 val pluginName = providers.gradleProperty("pluginName").get()
-val sinceBuildMajorVersion = "251" // corresponds to 2023.3.x versions
-val sinceIdeVersionForVerification = "251.28293.39" // corresponds to the 2025.1.5.1 version
+val sinceBuildMajorVersion = "252" // corresponds to 2025.2.x versions
+val sinceIdeVersionForVerification = "252.23892.409" // corresponds to the 2025.2 version
 val untilIdeVersion = providers.gradleProperty("IIC.release.version").get()
 val untilBuildMajorVersion = untilIdeVersion.substringBefore('.')
 
@@ -48,7 +48,7 @@ dependencies {
   implementation(project(":kotlin-eventstream2:client"))
 
   intellijPlatform {
-    intellijIdeaCommunity("2025.1.2")
+    intellijIdeaCommunity("2025.2.1")
 //    androidStudio("2024.3.1.13")
 
     bundledPlugin("com.intellij.gradle")
