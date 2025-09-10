@@ -1,6 +1,6 @@
 Release procedure for this repository
 
-# Releasing ide-metrics-plugin
+# Releasing ide-metrics IDE plugin
 
 The release process for the IDE plugin is automated and based on change detection that runs on a 
 schedule. See `.github/workflows/tag-changes.yml`.
