@@ -1,5 +1,4 @@
 [versions]
-changelog = "2.4.0"
 dependencyAnalysis = "3.0.1"
 develocity = "4.1.1"
 intelliJPlatform = "2.7.0"
@@ -37,7 +36,6 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 wireRuntime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
 
 [plugins]
-changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
 dependencyAnalysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
 intelliJPlatform = { id = "org.jetbrains.intellij.platform", version.ref = "intelliJPlatform" }
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

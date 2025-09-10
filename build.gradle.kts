@@ -1,5 +1,3 @@
-import org.jetbrains.changelog.Changelog
-import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
@@ -8,18 +6,15 @@ plugins {
   alias(libs.plugins.ksp)
   alias(libs.plugins.moshix)
   alias(libs.plugins.intelliJPlatform)
-  alias(libs.plugins.changelog)
   alias(libs.plugins.dependencyAnalysis)
   alias(libs.plugins.wire) apply false
 }
 
-val pluginVersion = providers.gradleProperty("pluginVersion").get()
 val pluginGroup = providers.gradleProperty("pluginGroup").get()
 
-println("pluginVersion = $pluginVersion")
-
 group = pluginGroup
-version = pluginVersion
+// IJ_PLUGIN_VERSION env var available in CI
+version = providers.environmentVariable("IJ_PLUGIN_VERSION").getOrElse("unknown")
 
 val pluginName = providers.gradleProperty("pluginName").get()
 val sinceBuildMajorVersion = "252" // corresponds to 2025.2.x versions
@@ -68,7 +63,7 @@ intellijPlatform {
   pluginConfiguration {
     id = pluginGroup // matches src/main/resources/META-INF/plugin.xml => idea-plugin.id
     name = pluginName
-    version = pluginVersion
+    version = project.version.toString()
     description = "Sends basic IDE performance telemetry to analytics backend"
     vendor {
       name = "Block"
@@ -78,30 +73,6 @@ intellijPlatform {
       sinceBuild = sinceBuildMajorVersion
       untilBuild = "$untilBuildMajorVersion.*"
     }
-
-    // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-    description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
-      val start = "<!-- Plugin description -->"
-      val end = "<!-- Plugin description end -->"
-
-      with(it.lines()) {
-        if (!containsAll(listOf(start, end))) {
-          throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-        }
-        subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
-      }
-    }
-
-    // val changelog = project.changelog // local variable for configuration cache compatibility
-    // Get the latest available change notes from the changelog file
-    // changeNotes = with(changelog) {
-    //   renderItem(
-    //     (getOrNull(pluginVersion) ?: getUnreleased())
-    //       .withHeader(false)
-    //       .withEmptySections(false),
-    //     Changelog.OutputType.HTML,
-    //   )
-    // }
   }
   pluginVerification {
     ides {
@@ -140,12 +111,6 @@ intellijPlatformTesting {
   }
 }
 
-// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-changelog {
-  groups.empty()
-  repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
-}
-
 tasks {
   buildPlugin {
     archiveBaseName = pluginName
@@ -160,7 +125,6 @@ tasks {
   }
 
   publishPlugin {
-    dependsOn(patchChangelog)
     token = providers.environmentVariable("JETBRAINS_TOKEN") // JETBRAINS_TOKEN env var available in CI
   }
 

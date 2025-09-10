@@ -1,10 +1,7 @@
 # Block IDE Metrics Plugin
 
-<!-- Plugin description -->
-Reports IDE sync performance
-
 https://github.com/block/ide-metrics-plugin
-<!-- Plugin description end -->
+https://plugins.jetbrains.com/plugin/28394-build-sync-metrics
 
 ## Usage
 

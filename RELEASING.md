@@ -5,8 +5,8 @@ Release procedure for this repository
 The release process for the IDE plugin is automated and based on change detection that runs on a 
 schedule. See `.github/workflows/tag-changes.yml`.
 
-Publishing can also be manually invoked via the `publish-ide-metrics-plugin` action on Github. The 
-version is defined as `pluginVersion` in `gradle.properties`.
+Publishing can also be manually invoked via the `publish-ide-metrics-plugin` action on Github, but
+this will require manual one-off modifications to the workflows.
 
 # Releasing Gradle plugin and dependency libraries
 
