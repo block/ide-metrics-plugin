@@ -1,9 +1,13 @@
 name: Update Version on Changes
 
 on:
-  workflow_dispatch:
   schedule:
     - cron:  '0 2 * * *' # daily at 2am.
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
 
 jobs:
   upgrade:
