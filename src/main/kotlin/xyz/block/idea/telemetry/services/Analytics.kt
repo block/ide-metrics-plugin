@@ -87,6 +87,11 @@ internal class Analytics(private val project: Project) {
         event = SyncEvent(
           syncType = syncResult.resultName,
           syncTime = syncResult.totalDuration,
+          configureIncludedBuildsDuration = if (syncResult is SyncSucceeded) syncResult.configureIncludedBuildsDuration else -1,
+          configureRootProjectDuration = if (syncResult is SyncSucceeded) syncResult.configureRootProjectDuration else -1,
+          gradleExecutionDuration = if (syncResult is SyncSucceeded) syncResult.gradleExecutionDuration else -1,
+          gradleDuration = if (syncResult is SyncSucceeded) syncResult.gradleDuration else -1,
+          ideDuration = if (syncResult is SyncSucceeded) syncResult.ideDuration else -1,
           jvmTotalMemory = Runtime.getRuntime().totalMemory().toString(),
           jvmFreeMemory = Runtime.getRuntime().freeMemory().toString(),
           availableProcessors = Runtime.getRuntime().availableProcessors().toLong(),
