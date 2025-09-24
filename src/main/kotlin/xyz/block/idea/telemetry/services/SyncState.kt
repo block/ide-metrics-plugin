@@ -121,7 +121,7 @@ internal class SyncState(private val project: Project) {
       gradleVersion,
       startTimestamp,
       finishTimestamp,
-      phases.pop()
+      phases.pollFirst()
     ))
   }
 
@@ -133,7 +133,7 @@ internal class SyncState(private val project: Project) {
       gradleVersion,
       startTimestamp,
       finishTimestamp,
-      phases.pop(),
+      phases.pollFirst(),
       error
     ))
   }

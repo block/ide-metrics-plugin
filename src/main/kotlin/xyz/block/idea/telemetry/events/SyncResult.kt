@@ -55,7 +55,7 @@ internal sealed class SyncResult(
     override val gradleVersion: GradleVersion?,
     override val startTimestamp: Long,
     override val finishTimestamp: Long,
-    val phase: SyncPhase,
+    val phase: SyncPhase?,
     val exception: Throwable,
   ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp)
 
@@ -64,6 +64,6 @@ internal sealed class SyncResult(
     override val gradleVersion: GradleVersion?,
     override val startTimestamp: Long,
     override val finishTimestamp: Long,
-    val phase: SyncPhase,
+    val phase: SyncPhase?,
   ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp)
 }
