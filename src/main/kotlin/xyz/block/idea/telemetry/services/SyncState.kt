@@ -20,6 +20,7 @@ internal class SyncState(private val project: Project) {
     val Project.syncState: SyncState get() = get(this)
   }
 
+  private val lock = Any()
   private var startTimestamp: Long = -1
   private var hasIncludedBuilds: Boolean = false
   private var finishConfigureIncludedBuildsTimestamp: Long = -1
@@ -61,80 +62,100 @@ internal class SyncState(private val project: Project) {
   }
 
   fun syncStarted() {
-    thisLogger().info("syncStarted")
-    reset()
-    phases.pop()
-    startTimestamp = now()
+    synchronized(lock) {
+      thisLogger().info("syncStarted")
+      reset()
+      phases.pollFirst()
+      startTimestamp = now()
+    }
   }
 
   fun hasIncludedBuilds() {
-    thisLogger().info("hasIncludedBuilds")
-    hasIncludedBuilds = true
+    synchronized(lock) {
+      thisLogger().info("hasIncludedBuilds")
+      hasIncludedBuilds = true
+    }
   }
 
   fun syncConfigureIncludedBuildsFinished() {
-    thisLogger().info("syncConfigureIncludedBuildsFinished")
-    phases.pop()
-    finishConfigureIncludedBuildsTimestamp = now()
+    synchronized(lock) {
+      thisLogger().info("syncConfigureIncludedBuildsFinished")
+      phases.pollFirst()
+      finishConfigureIncludedBuildsTimestamp = now()
+    }
   }
 
   fun syncConfigureRootBuildFinished(gradleVersion: GradleVersion?) {
-    thisLogger().info("syncConfigureRootBuildFinished ($gradleVersion)")
-    if (!hasIncludedBuilds) {
-      phases.pop()
+    synchronized(lock) {
+      thisLogger().info("syncConfigureRootBuildFinished ($gradleVersion)")
+      if (!hasIncludedBuilds) {
+        phases.pollFirst()
+      }
+      phases.pollFirst()
+      this.gradleVersion = gradleVersion
+      finishConfigureRootBuildTimestamp = now()
     }
-    phases.pop()
-    this.gradleVersion = gradleVersion
-    finishConfigureRootBuildTimestamp = now()
   }
 
   fun syncGradleFinished(projectCount: Int) {
-    thisLogger().info("syncGradleFinished")
-    phases.pop()
-    gradleFinishTimestamp = now()
-    gradleProjectCount = projectCount
+    synchronized(lock) {
+      thisLogger().info("syncGradleFinished")
+      phases.pollFirst()
+      gradleFinishTimestamp = now()
+      gradleProjectCount = projectCount
+    }
   }
 
   fun syncFinished() {
-    thisLogger().info("syncFinished")
-    finishTimestamp = now()
-    logEvent(
-      SyncResult.SyncSucceeded(
-        project.buildTraceId,
-        gradleVersion,
-        startTimestamp,
-        finishTimestamp,
-        gradleProjectCount,
-        hasIncludedBuilds,
-        finishConfigureIncludedBuildsTimestamp,
-        finishConfigureRootBuildTimestamp,
-        gradleFinishTimestamp
+    synchronized(lock) {
+      thisLogger().info("syncFinished")
+      finishTimestamp = now()
+      logEvent(
+        SyncResult.SyncSucceeded(
+          project.buildTraceId,
+          gradleVersion,
+          startTimestamp,
+          finishTimestamp,
+          gradleProjectCount,
+          hasIncludedBuilds,
+          finishConfigureIncludedBuildsTimestamp,
+          finishConfigureRootBuildTimestamp,
+          gradleFinishTimestamp
+        )
       )
-    )
+    }
   }
 
   fun syncCanceled() {
-    thisLogger().info("syncCanceled")
-    finishTimestamp = now()
-    logEvent(SyncResult.SyncCancelled(
-      project.buildTraceId,
-      gradleVersion,
-      startTimestamp,
-      finishTimestamp,
-      phases.pop()
-    ))
+    synchronized(lock) {
+      thisLogger().info("syncCanceled")
+      finishTimestamp = now()
+      logEvent(
+        SyncResult.SyncCancelled(
+          project.buildTraceId,
+          gradleVersion,
+          startTimestamp,
+          finishTimestamp,
+          phases.pollFirst()
+        )
+      )
+    }
   }
 
   fun syncError(error: Throwable) {
-    thisLogger().error("syncError", error)
-    finishTimestamp = now()
-    logEvent(SyncResult.SyncFailed(
-      project.buildTraceId,
-      gradleVersion,
-      startTimestamp,
-      finishTimestamp,
-      phases.pop(),
-      error
-    ))
+    synchronized(lock) {
+      thisLogger().error("syncError", error)
+      finishTimestamp = now()
+      logEvent(
+        SyncResult.SyncFailed(
+          project.buildTraceId,
+          gradleVersion,
+          startTimestamp,
+          finishTimestamp,
+          phases.pollFirst(),
+          error
+        )
+      )
+    }
   }
 }
