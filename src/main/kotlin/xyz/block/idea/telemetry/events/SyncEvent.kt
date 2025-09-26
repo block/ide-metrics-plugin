@@ -11,6 +11,21 @@ data class SyncEvent(
   /** Amount of time the sync event took, in milliseconds */
   @Json(name = "telemetry_android_sync_time") val syncTime: Long,
 
+  /** Duration of the configure included builds phase, in milliseconds */
+  @Json(name = "configure_included_builds_duration") val configureIncludedBuildsDuration: Long,
+
+  /** Duration of the configure root project phase, in milliseconds */
+  @Json(name = "configure_root_project_duration") val configureRootProjectDuration: Long,
+
+  /** Duration of the gradle execution phase, in milliseconds */
+  @Json(name = "gradle_execution_duration") val gradleExecutionDuration: Long,
+
+  /** Duration of the total gradle phase (configure + execution), in milliseconds */
+  @Json(name = "gradle_duration") val gradleDuration: Long,
+
+  /** Duration of the IDE processing phase, in milliseconds */
+  @Json(name = "ide_duration") val ideDuration: Long,
+
   /** Total amount of memory allocated to the JVM, in bytes */
   @Json(name = "telemetry_android_jvm_total_memory") val jvmTotalMemory: String,
 
