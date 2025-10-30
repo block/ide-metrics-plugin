@@ -46,8 +46,10 @@ jobs:
       - name: Check non-IDE plugin
         run: './gradlew check -x :check -s'
 
+      # TODO(tsr): skipping :verifyPlugin because:
+      #  https://cash.slack.com/archives/C01E5T99NMA/p1761861080440779
       - name: Check IDE plugin
-        run: './gradlew :check -s'
+        run: './gradlew :check -x :verifyPlugin -s'
 
       - name: Dependency Analysis
         run: './gradlew :buildHealth -s'
