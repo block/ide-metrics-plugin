@@ -17,7 +17,7 @@ group = pluginGroup
 version = providers.environmentVariable("IJ_PLUGIN_VERSION").getOrElse("unknown")
 
 val pluginName = providers.gradleProperty("pluginName").get()
-val sinceBuildMajorVersion = "252" // corresponds to 2025.2.x versions
+val sinceBuildMajorVersion = "251" // corresponds to 2025.1.x versions
 val sinceIdeVersionForVerification = "252.23892.409" // corresponds to the 2025.2 version
 val untilIdeVersion = providers.gradleProperty("IIC.release.version").get()
 val untilBuildMajorVersion = untilIdeVersion.substringBefore('.')
