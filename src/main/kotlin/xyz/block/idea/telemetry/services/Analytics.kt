@@ -9,12 +9,15 @@ import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findFile
 import com.squareup.eventstream.Eventstream
-import com.squareup.eventstream.EventstreamEvent
 import com.squareup.eventstream.EventstreamService
 import xyz.block.idea.telemetry.events.SyncEvent
 import xyz.block.idea.telemetry.events.SyncResult
 import xyz.block.idea.telemetry.events.SyncResult.SyncFailed
 import xyz.block.idea.telemetry.events.SyncResult.SyncSucceeded
+import xyz.block.idea.telemetry.submitters.TelemetrySubmitter
+import xyz.block.idea.telemetry.submitters.eventstream.EventstreamSubmitter
+import xyz.block.idea.telemetry.submitters.googleforms.GoogleFormsSubmitter
+import xyz.block.idea.telemetry.submitters.googleforms.GoogleFormsUrlParser
 import xyz.block.idea.telemetry.util.intellij.ANDROID_PLUGIN_ID
 import xyz.block.idea.telemetry.util.intellij.BLOCK_TELEMETRY_PLUGIN_ID
 import xyz.block.idea.telemetry.util.intellij.INTELLIJ_CORE_ID
@@ -59,6 +62,35 @@ internal class Analytics(private val project: Project) {
     configProperties.getProperty(ENDPOINT_PROPERTY_NAME).orEmpty()
   }
 
+  private val telemetrySubmitter: TelemetrySubmitter? by lazy {
+    // Can't do anything if there's no endpoint in the repo's properties file
+    if (endpoint.isBlank()) {
+      thisLogger().warn("No endpoint found in $CONFIG_FILE_PATH. Set one with '$ENDPOINT_PROPERTY_NAME=...'")
+      return@lazy null
+    }
+
+    val endpoint = endpoint.ensurePrefix()
+
+    when {
+      endpoint.contains("docs.google.com") -> {
+        thisLogger().info("Detected Google Forms URL - using Google Forms submitter")
+        val parsedUrl = GoogleFormsUrlParser.parse(endpoint)
+        if (parsedUrl != null) {
+          GoogleFormsSubmitter(parsedUrl)
+        } else {
+          thisLogger().error("Failed to initialize Google Forms submitter with endpoint: $endpoint")
+          null
+        }
+      }
+
+      else -> {
+        thisLogger().info("Using eventstream submitter for endpoint: $endpoint")
+        val es2 = Eventstream(EventstreamService(true, endpoint))
+        EventstreamSubmitter(es2)
+      }
+    }
+  }
+
   private val androidStudioVersion: String = getPluginVersion(ANDROID_PLUGIN_ID)
   private val intelliJCoreVersion: String = getPluginVersion(INTELLIJ_CORE_ID)
   private val kotlinGradlePluginVersion: String = getPluginVersion(KOTLIN_PLUGIN_ID)
@@ -72,52 +104,46 @@ internal class Analytics(private val project: Project) {
   private val user: String = System.getProperty("user.name")
 
   fun recordSyncEvent(syncResult: SyncResult) {
-    // Can't do anything if there's no endpoint in the repo's properties file
-    if (endpoint.isBlank()) {
-      thisLogger().warn("No endpoint found in $CONFIG_FILE_PATH. Set one with '$ENDPOINT_PROPERTY_NAME=...'")
+    val submitter = telemetrySubmitter
+    if (submitter == null) {
+      thisLogger().warn("No telemetry submitter available - skipping event")
       return
     }
 
-    val endpoint = endpoint.ensurePrefix()
-
     ApplicationManager.getApplication().executeOnPooledThread {
-      val eventstreamEvent = EventstreamEvent(
-        catalogName = "telemetry_android",
-        appName = "sa-toolkit-plugin", // TODO: unique app name
-        event = SyncEvent(
-          syncType = syncResult.resultName,
-          syncTime = syncResult.totalDuration,
-          configureIncludedBuildsDuration = if (syncResult is SyncSucceeded) syncResult.configureIncludedBuildsDuration else -1,
-          configureRootProjectDuration = if (syncResult is SyncSucceeded) syncResult.configureRootProjectDuration else -1,
-          gradleExecutionDuration = if (syncResult is SyncSucceeded) syncResult.gradleExecutionDuration else -1,
-          gradleDuration = if (syncResult is SyncSucceeded) syncResult.gradleDuration else -1,
-          ideDuration = if (syncResult is SyncSucceeded) syncResult.ideDuration else -1,
-          jvmTotalMemory = Runtime.getRuntime().totalMemory().toString(),
-          jvmFreeMemory = Runtime.getRuntime().freeMemory().toString(),
-          availableProcessors = Runtime.getRuntime().availableProcessors().toLong(),
-          cpuName = readCpuName(),
-          numberOfModules = if (syncResult is SyncSucceeded) syncResult.projectCount.toLong() else -1,
-          activeWorkspace = null,
-          errorMessage = if (syncResult is SyncFailed) syncResult.exception.message else null,
-          studioVersion = androidStudioVersion,
-          agpVersion = null,
-          gradleVersion = syncResult.gradleVersion?.version,
-          intellijCoreVersion = intelliJCoreVersion,
-          // prefix version with plugin ID so we can differentiate it from sa-toolkit metrics
-          toolkitVersion = "$BLOCK_TELEMETRY_PLUGIN_ID-$blockPluginVersion",
-          userLdap = user,
-          osSystemArchitecture = operatingSystemArchitecture,
-          artifactSyncEnabled = false,
-          activeRootProjectName = project.name,
-          saToolboxChannel = null,
-          syncTraceId = syncResult.buildTraceId?.toString(),
-        )
+      val syncEvent = SyncEvent(
+        syncType = syncResult.resultName,
+        syncTime = syncResult.totalDuration,
+        configureIncludedBuildsDuration = if (syncResult is SyncSucceeded) syncResult.configureIncludedBuildsDuration else -1,
+        configureRootProjectDuration = if (syncResult is SyncSucceeded) syncResult.configureRootProjectDuration else -1,
+        gradleExecutionDuration = if (syncResult is SyncSucceeded) syncResult.gradleExecutionDuration else -1,
+        gradleDuration = if (syncResult is SyncSucceeded) syncResult.gradleDuration else -1,
+        ideDuration = if (syncResult is SyncSucceeded) syncResult.ideDuration else -1,
+        jvmTotalMemory = Runtime.getRuntime().totalMemory().toString(),
+        jvmFreeMemory = Runtime.getRuntime().freeMemory().toString(),
+        availableProcessors = Runtime.getRuntime().availableProcessors().toLong(),
+        cpuName = readCpuName(),
+        numberOfModules = if (syncResult is SyncSucceeded) syncResult.projectCount.toLong() else -1,
+        activeWorkspace = null,
+        errorMessage = if (syncResult is SyncFailed) syncResult.exception.message else null,
+        studioVersion = androidStudioVersion,
+        agpVersion = null,
+        gradleVersion = syncResult.gradleVersion?.version,
+        intellijCoreVersion = intelliJCoreVersion,
+        // prefix version with plugin ID so we can differentiate it from sa-toolkit metrics
+        toolkitVersion = "$BLOCK_TELEMETRY_PLUGIN_ID-$blockPluginVersion",
+        userLdap = user,
+        osSystemArchitecture = operatingSystemArchitecture,
+        artifactSyncEnabled = false,
+        activeRootProjectName = project.name,
+        saToolboxChannel = null,
+        syncTraceId = syncResult.buildTraceId?.toString(),
       )
 
-      thisLogger().info("Sync $syncResult. Recording event to Eventstream: $eventstreamEvent")
-      val es2 = Eventstream(EventstreamService(true, endpoint))
-      if (!es2.sendEvents(listOf(eventstreamEvent))) {
-        thisLogger().error("Recording sync $syncResult event to Eventstream failed.")
+      thisLogger().info("Sync $syncResult. Recording event via ${submitter.javaClass.simpleName}")
+
+      if (!submitter.submitEvent(syncEvent)) {
+        thisLogger().error("Recording sync $syncResult event failed.")
       }
     }
   }
