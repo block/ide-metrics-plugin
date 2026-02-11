@@ -12,6 +12,9 @@
         <externalSystemTaskNotificationListener implementation="xyz.block.idea.telemetry.listeners.sync.GradleResolveProjectTaskListener" />
         <projectService serviceImplementation="xyz.block.idea.telemetry.services.SyncState"/>
         <projectService serviceImplementation="xyz.block.idea.telemetry.services.Analytics"/>
+        <applicationService serviceImplementation="xyz.block.idea.telemetry.freeze.SentryConfig"/>
+        <notificationGroup id="Block IDE Metrics" displayType="BALLOON"/>
+        <projectActivity implementation="xyz.block.idea.telemetry.freeze.FreezeListenerRegistrar"/>
     </extensions>
     <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
         <executionHelperExtension implementation="xyz.block.idea.telemetry.listeners.sync.GradleBuildPhaseListener"/>

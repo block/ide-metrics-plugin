@@ -5,9 +5,6 @@ import com.intellij.execution.util.ExecUtil
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findFile
 import com.squareup.eventstream.Eventstream
 import com.squareup.eventstream.EventstreamEvent
 import com.squareup.eventstream.EventstreamService
@@ -15,48 +12,19 @@ import xyz.block.idea.telemetry.events.SyncEvent
 import xyz.block.idea.telemetry.events.SyncResult
 import xyz.block.idea.telemetry.events.SyncResult.SyncFailed
 import xyz.block.idea.telemetry.events.SyncResult.SyncSucceeded
+import xyz.block.idea.telemetry.util.ProjectProperties
 import xyz.block.idea.telemetry.util.intellij.ANDROID_PLUGIN_ID
 import xyz.block.idea.telemetry.util.intellij.BLOCK_TELEMETRY_PLUGIN_ID
 import xyz.block.idea.telemetry.util.intellij.INTELLIJ_CORE_ID
 import xyz.block.idea.telemetry.util.intellij.KOTLIN_PLUGIN_ID
 import xyz.block.idea.telemetry.util.intellij.getPluginVersion
-import java.io.InputStreamReader
-import java.util.Properties
 
 internal class Analytics(private val project: Project) {
 
-  // This is calculated once and on demand.
-  // Changes to the config file will require an IJ restart.
-  private val gradleProperties: Properties by lazy {
-    val properties = Properties()
-    project.getFile(CONFIG_FILE_PATH)?.let { file ->
-      InputStreamReader(file.inputStream).use {
-        properties.load(it)
-      }
-    }
-    properties
-  }
-
-  private val configProperties: Properties by lazy {
-    val b = gradleProperties.getProperty(DELEGATE_FILE_PATH)
-    if (b != null) {
-      val properties = Properties()
-      project.getFile(b)?.let { file ->
-        InputStreamReader(file.inputStream).use {
-          properties.load(it)
-        }
-      }
-
-      // If the user specified a delegate file, use those properties
-      properties
-    } else {
-      // Otherwise, use the original
-      gradleProperties
-    }
-  }
+  private val projectProperties = ProjectProperties(project)
 
   private val endpoint: String by lazy {
-    configProperties.getProperty(ENDPOINT_PROPERTY_NAME).orEmpty()
+    projectProperties.get(ENDPOINT_PROPERTY_NAME).orEmpty()
   }
 
   private val androidStudioVersion: String = getPluginVersion(ANDROID_PLUGIN_ID)
@@ -74,7 +42,7 @@ internal class Analytics(private val project: Project) {
   fun recordSyncEvent(syncResult: SyncResult) {
     // Can't do anything if there's no endpoint in the repo's properties file
     if (endpoint.isBlank()) {
-      thisLogger().warn("No endpoint found in $CONFIG_FILE_PATH. Set one with '$ENDPOINT_PROPERTY_NAME=...'")
+      thisLogger().warn("No endpoint found in gradle.properties. Set one with '$ENDPOINT_PROPERTY_NAME=...'")
       return
     }
 
@@ -123,8 +91,6 @@ internal class Analytics(private val project: Project) {
   }
 
   companion object {
-    private const val CONFIG_FILE_PATH: String = "gradle.properties"
-    private const val DELEGATE_FILE_PATH: String = "ide-metrics-plugin.config-file"
     private const val ENDPOINT_PROPERTY_NAME: String = "ide-metrics-plugin.event-stream-endpoint"
 
     @JvmStatic
@@ -137,19 +103,6 @@ internal class Analytics(private val project: Project) {
       ExecUtil.execAndGetOutput(command).stdout.trim()
     } catch (_: Exception) {
       "Unknown"
-    }
-
-    private fun Project.getFile(filePath: String): VirtualFile? {
-      val rootDir = guessProjectDir()
-      if (rootDir == null) {
-        thisLogger().warn("The project root directory is null - skipping")
-        return null
-      }
-      val file = rootDir.findFile(filePath)
-      if (file == null) {
-        thisLogger().info("The file at $filePath is missing")
-      }
-      return file
     }
 
     private fun String.ensurePrefix(prefix: String = "https://"): String {
