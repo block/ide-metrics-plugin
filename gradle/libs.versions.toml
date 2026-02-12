@@ -13,6 +13,7 @@ okhttp = "5.1.0"
 okio = "3.16.0"
 qodana = "2024.2.3"
 retrofit = "3.0.0"
+sentry = "8.32.0"
 truth = "1.4.4"
 wire = "5.3.11"
 
@@ -32,6 +33,7 @@ okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofitConvertireWire = { module = "com.squareup.retrofit2:converter-wire", version.ref = "retrofit"}
 retrofitMock = { module = "com.squareup.retrofit2:retrofit-mock", version.ref = "retrofit" }
+sentry = { module = "io.sentry:sentry", version.ref = "sentry" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 wireRuntime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
 
