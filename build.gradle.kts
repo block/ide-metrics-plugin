@@ -43,6 +43,8 @@ repositories {
 dependencies {
   implementation(project(":common"))
   implementation(project(":kotlin-eventstream2:client"))
+  implementation(libs.okhttp)
+  implementation(libs.retrofit)
 
   intellijPlatform {
     intellijIdeaCommunity("2025.2.3")
