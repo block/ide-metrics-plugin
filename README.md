@@ -5,7 +5,9 @@ https://plugins.jetbrains.com/plugin/28394-build-sync-metrics
 
 ## Usage
 
-This plugin supports two telemetry backends. The plugin automatically detects which backend to use based on the URL you configure.
+The plugin records IDE sync metrics for Gradle projects, and for Bazel projects when the **Bazel by JetBrains** plugin (`org.jetbrains.bazel`) is installed. Bazel syncs report duration, module count, and outcome (succeeded/partially_succeeded/failed/cancelled, observed via the IDE's Sync view since the Bazel plugin's public API does not expose success/failure; falls back to "finished" if the outcome cannot be determined). Per-phase timings are not available for Bazel.
+
+This plugin supports two telemetry backends. The plugin automatically detects which backend to use based on the URL you configure. The endpoint is read from `gradle.properties` at the project root. A repo that doesn't use Gradle (e.g. Bazel) can instead put the same properties in a file named `ide-metrics-plugin.config-file` at the project root (the same file `gradle.properties` can delegate to, see [Advanced: Delegate Config File](#advanced-delegate-config-file)).
 
 ### Option 1: Eventstream
 
@@ -44,7 +46,8 @@ Use these exact placeholder codes when generating your prefilled link:
 
 | Field | Placeholder Code | Description |
 |-------|------------------|-------------|
-| Sync Type | `SYNC_TYPE` | succeeded/failed/cancelled |
+| Sync Type | `SYNC_TYPE` | succeeded/failed/cancelled for Gradle; succeeded/partially_succeeded/failed/cancelled (or finished) for Bazel |
+| Build Tool | `BUILD_TOOL` | gradle or bazel |
 | Sync Time | `SYNC_TIME` | Total duration in milliseconds |
 | Configure Included Builds Duration | `CONFIGURE_INCLUDED_BUILDS_DURATION` | Phase duration in ms |
 | Configure Root Project Duration | `CONFIGURE_ROOT_PROJECT_DURATION` | Phase duration in ms |
@@ -95,3 +98,5 @@ and
 # preferred-config-file.properties
 ide-metrics-plugin.event-stream-endpoint=<endpoint>
 ```
+
+If there is no `gradle.properties` (e.g. a Bazel repo), the plugin reads a file named `ide-metrics-plugin.config-file` at the project root directly.

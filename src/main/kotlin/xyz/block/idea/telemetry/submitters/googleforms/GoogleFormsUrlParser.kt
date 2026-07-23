@@ -17,7 +17,7 @@ internal object GoogleFormsUrlParser {
 
   private val PLACEHOLDER_MAPPING: Map<String, (SyncEvent) -> String?> = mapOf(
     "SYNC_TYPE" to SyncEvent::syncType,
-    "SYNC_TIME" to SyncEvent::syncTime.toStringMapping(),
+    "BUILD_TOOL" to SyncEvent::buildTool,
     "SYNC_TIME" to SyncEvent::syncTime.toStringMapping(),
     "CONFIGURE_INCLUDED_BUILDS_DURATION" to SyncEvent::configureIncludedBuildsDuration.toStringMapping(),
     "CONFIGURE_ROOT_PROJECT_DURATION" to SyncEvent::configureRootProjectDuration.toStringMapping(),

@@ -50,6 +50,9 @@ dependencies {
 //    androidStudio("2024.3.1.13")
 
     bundledPlugin("com.intellij.gradle")
+    // Compile against the JetBrains Bazel plugin to observe Bazel sync events.
+    // This is an optional dependency at runtime (see plugin.xml).
+    plugin("org.jetbrains.bazel", "2025.2.12")
 
     pluginVerifier()
     zipSigner()
@@ -113,6 +116,15 @@ intellijPlatformTesting {
 }
 
 tasks {
+  // Jars copied into the sandbox from the Gradle transform cache (e.g. the Bazel plugin) are
+  // read-only, which makes subsequent sandbox syncs fail with "Permission denied" when they
+  // try to overwrite them. Make the previous sandbox contents writable before syncing.
+  withType<org.jetbrains.intellij.platform.gradle.tasks.PrepareSandboxTask>().configureEach {
+    doFirst {
+      destinationDir.walkBottomUp().forEach { it.setWritable(true) }
+    }
+  }
+
   buildPlugin {
     archiveBaseName = pluginName
   }

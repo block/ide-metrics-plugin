@@ -28,11 +28,16 @@ import java.util.Properties
 
 internal class Analytics(private val project: Project) {
 
+  // Configuration is read from gradle.properties at the project root. A repo that doesn't use
+  // Gradle (e.g. Bazel) can instead put the same properties in a file named
+  // "ide-metrics-plugin.config-file" at the project root - the same file gradle.properties can
+  // delegate to via the property of that name.
   // This is calculated once and on demand.
   // Changes to the config file will require an IJ restart.
-  private val gradleProperties: Properties by lazy {
+  private val baseProperties: Properties by lazy {
     val properties = Properties()
-    project.getFile(CONFIG_FILE_PATH)?.let { file ->
+    val file = project.getFile(GRADLE_CONFIG_FILE_PATH) ?: project.getFile(DELEGATE_FILE_PATH)
+    if (file != null) {
       InputStreamReader(file.inputStream).use {
         properties.load(it)
       }
@@ -41,7 +46,7 @@ internal class Analytics(private val project: Project) {
   }
 
   private val configProperties: Properties by lazy {
-    val b = gradleProperties.getProperty(DELEGATE_FILE_PATH)
+    val b = baseProperties.getProperty(DELEGATE_FILE_PATH)
     if (b != null) {
       val properties = Properties()
       project.getFile(b)?.let { file ->
@@ -54,7 +59,7 @@ internal class Analytics(private val project: Project) {
       properties
     } else {
       // Otherwise, use the original
-      gradleProperties
+      baseProperties
     }
   }
 
@@ -65,7 +70,10 @@ internal class Analytics(private val project: Project) {
   private val telemetrySubmitter: TelemetrySubmitter? by lazy {
     // Can't do anything if there's no endpoint in the repo's properties file
     if (endpoint.isBlank()) {
-      thisLogger().warn("No endpoint found in $CONFIG_FILE_PATH. Set one with '$ENDPOINT_PROPERTY_NAME=...'")
+      thisLogger().warn(
+        "No endpoint found. Set '$ENDPOINT_PROPERTY_NAME=...' in $GRADLE_CONFIG_FILE_PATH or " +
+          "$DELEGATE_FILE_PATH at the project root"
+      )
       return@lazy null
     }
 
@@ -113,6 +121,7 @@ internal class Analytics(private val project: Project) {
     ApplicationManager.getApplication().executeOnPooledThread {
       val syncEvent = SyncEvent(
         syncType = syncResult.resultName,
+        buildTool = syncResult.buildTool,
         syncTime = syncResult.totalDuration,
         configureIncludedBuildsDuration = if (syncResult is SyncSucceeded) syncResult.configureIncludedBuildsDuration else -1,
         configureRootProjectDuration = if (syncResult is SyncSucceeded) syncResult.configureRootProjectDuration else -1,
@@ -123,7 +132,11 @@ internal class Analytics(private val project: Project) {
         jvmFreeMemory = Runtime.getRuntime().freeMemory().toString(),
         availableProcessors = Runtime.getRuntime().availableProcessors().toLong(),
         cpuName = readCpuName(),
-        numberOfModules = if (syncResult is SyncSucceeded) syncResult.projectCount.toLong() else -1,
+        numberOfModules = when (syncResult) {
+          is SyncSucceeded -> syncResult.projectCount.toLong()
+          is SyncResult.BazelSync -> syncResult.moduleCount.toLong()
+          else -> -1
+        },
         activeWorkspace = null,
         errorMessage = if (syncResult is SyncFailed) syncResult.exception.message else null,
         studioVersion = androidStudioVersion,
@@ -149,7 +162,7 @@ internal class Analytics(private val project: Project) {
   }
 
   companion object {
-    private const val CONFIG_FILE_PATH: String = "gradle.properties"
+    private const val GRADLE_CONFIG_FILE_PATH: String = "gradle.properties"
     private const val DELEGATE_FILE_PATH: String = "ide-metrics-plugin.config-file"
     private const val ENDPOINT_PROPERTY_NAME: String = "ide-metrics-plugin.event-stream-endpoint"
 
