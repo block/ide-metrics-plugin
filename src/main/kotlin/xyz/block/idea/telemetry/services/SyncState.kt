@@ -56,6 +56,8 @@ internal class SyncState(private val project: Project) {
       }
       is SyncResult.SyncCancelled -> thisLogger().info("sync cancelled at ${result.phase}, Total Duration: ${result.totalDuration}ms")
       is SyncResult.SyncFailed -> thisLogger().info("sync failed at ${result.phase}, Total Duration: ${result.totalDuration}ms - ${result.exception.message}")
+      // Bazel syncs are reported directly to Analytics by the Bazel listeners and never flow through SyncState.
+      is SyncResult.BazelSync -> thisLogger().error("Unexpected Bazel sync result in SyncState: $result")
     }
     project.analyticsService.recordSyncEvent(result)
     reset()

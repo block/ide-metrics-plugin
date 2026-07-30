@@ -1,0 +1,11 @@
+<!-- Loaded only when the JetBrains Bazel plugin (org.jetbrains.bazel) is installed and enabled. -->
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="xyz.block.idea.telemetry.listeners.sync.BazelSyncOutcomeTrackerInitializer"/>
+    </extensions>
+
+    <projectListeners>
+        <listener class="xyz.block.idea.telemetry.listeners.sync.BazelSyncListener"
+                  topic="org.jetbrains.bazel.sync.status.SyncStatusListener"/>
+    </projectListeners>
+</idea-plugin>

@@ -8,6 +8,9 @@ data class SyncEvent(
   /** The type of sync event that was detected. */
   @Json(name = "telemetry_android_sync_type") val syncType: String,
 
+  /** The build tool that performed the sync, e.g. "gradle" or "bazel" */
+  @Json(name = "build_tool") val buildTool: String,
+
   /** Amount of time the sync event took, in milliseconds */
   @Json(name = "telemetry_android_sync_time") val syncTime: Long,
 

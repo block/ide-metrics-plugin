@@ -15,6 +15,12 @@ internal sealed class SyncResult(
     is SyncSucceeded -> "succeeded"
     is SyncCancelled -> "cancelled"
     is SyncFailed -> "failed"
+    is BazelSync -> outcome
+  }
+
+  val buildTool: String get() = when (this) {
+    is BazelSync -> "bazel"
+    else -> "gradle"
   }
 
   data class SyncSucceeded(
@@ -66,4 +72,18 @@ internal sealed class SyncResult(
     override val finishTimestamp: Long,
     val phase: SyncPhase?,
   ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp)
+
+  /**
+   * A Bazel sync, from the JetBrains Bazel plugin (org.jetbrains.bazel).
+   */
+  data class BazelSync(
+    override val startTimestamp: Long,
+    override val finishTimestamp: Long,
+    /**
+     * "succeeded", "partially_succeeded", "failed", or "cancelled". Falls back to "finished"
+     * when the outcome could not be observed (see BazelSyncOutcomeTracker).
+     */
+    val outcome: String,
+    val moduleCount: Int = -1,
+  ) : SyncResult(null, null, startTimestamp, finishTimestamp)
 }
