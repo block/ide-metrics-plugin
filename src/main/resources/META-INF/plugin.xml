@@ -16,6 +16,7 @@
     </extensions>
     <extensions defaultExtensionNs="org.jetbrains.plugins.gradle">
         <executionHelperExtension implementation="xyz.block.idea.telemetry.listeners.sync.GradleBuildPhaseListener"/>
+        <projectResolve implementation="xyz.block.idea.telemetry.listeners.sync.IsolatedProjectsResolverExtension"/>
     </extensions>
 
     <projectListeners>

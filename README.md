@@ -65,6 +65,7 @@ Use these exact placeholder codes when generating your prefilled link:
 | Toolkit Version | `TOOLKIT_VERSION` | Plugin version |
 | AGP Version | `AGP_VERSION` | Android Gradle Plugin version |
 | Gradle Version | `GRADLE_VERSION` | Gradle version |
+| Isolated Projects Enabled | `ISOLATED_PROJECTS_ENABLED` | Whether org.gradle.isolated-projects was enabled for the sync |
 | IntelliJ Core Version | `INTELLIJ_CORE_VERSION` | IntelliJ Core version |
 | User LDAP | `USER_LDAP` | System username |
 | OS System Architecture | `OS_SYSTEM_ARCHITECTURE` | OS architecture |

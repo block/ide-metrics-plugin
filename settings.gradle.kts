@@ -44,6 +44,7 @@ rootProject.name = "ide-metrics-plugin"
 
 include(":common")
 include(":gradle-plugin")
+include(":gradle-tooling-extension")
 include(":kotlin-eventstream2:client")
 include(":kotlin-eventstream2:protos")
 

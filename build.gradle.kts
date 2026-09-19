@@ -41,6 +41,7 @@ repositories {
 
 dependencies {
   implementation(project(":common"))
+  implementation(project(":gradle-tooling-extension"))
   implementation(project(":kotlin-eventstream2:client"))
   implementation(libs.okhttp)
   implementation(libs.retrofit)

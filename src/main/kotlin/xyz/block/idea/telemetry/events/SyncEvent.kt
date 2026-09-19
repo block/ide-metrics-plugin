@@ -62,6 +62,9 @@ data class SyncEvent(
   /** Gradle build tool version for the active environment */
   @Json(name = "telemetry_android_gradle_version") val gradleVersion: String?,
 
+  /** Whether Gradle's isolated projects feature (org.gradle.isolated-projects) was enabled for the sync */
+  @Json(name = "telemetry_android_isolated_projects_enabled") val isolatedProjectsEnabled: Boolean,
+
   /** IntelliJ Core version for the active environment */
   @Json(name = "telemetry_android_intellij_core_version") val intellijCoreVersion: String,
 

@@ -6,6 +6,8 @@ import java.util.*
 internal sealed class SyncResult(
   open val buildTraceId: UUID?,
   open val gradleVersion: GradleVersion?,
+  /** Whether Gradle's isolated projects feature was enabled for the sync. Always false for Bazel. */
+  open val isolatedProjectsEnabled: Boolean,
   open val startTimestamp: Long,
   open val finishTimestamp: Long,
 ) {
@@ -26,6 +28,7 @@ internal sealed class SyncResult(
   data class SyncSucceeded(
     override val buildTraceId: UUID?,
     override val gradleVersion: GradleVersion?,
+    override val isolatedProjectsEnabled: Boolean,
     override val startTimestamp: Long,
     override val finishTimestamp: Long,
     val projectCount: Int,
@@ -33,7 +36,7 @@ internal sealed class SyncResult(
     val configureIncludedBuildsFinishTimestamp: Long,
     val configureRootProjectFinishTimestamp: Long,
     val gradleFinishTimestamp: Long,
-  ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp) {
+  ) : SyncResult(buildTraceId, gradleVersion, isolatedProjectsEnabled, startTimestamp, finishTimestamp) {
     val configureIncludedBuildsDuration: Long
       get() = when (hasIncludedBuilds) {
         true -> configureIncludedBuildsFinishTimestamp - startTimestamp
@@ -59,19 +62,21 @@ internal sealed class SyncResult(
   data class SyncFailed(
     override val buildTraceId: UUID?,
     override val gradleVersion: GradleVersion?,
+    override val isolatedProjectsEnabled: Boolean,
     override val startTimestamp: Long,
     override val finishTimestamp: Long,
     val phase: SyncPhase?,
     val exception: Throwable,
-  ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp)
+  ) : SyncResult(buildTraceId, gradleVersion, isolatedProjectsEnabled, startTimestamp, finishTimestamp)
 
   data class SyncCancelled(
     override val buildTraceId: UUID?,
     override val gradleVersion: GradleVersion?,
+    override val isolatedProjectsEnabled: Boolean,
     override val startTimestamp: Long,
     override val finishTimestamp: Long,
     val phase: SyncPhase?,
-  ) : SyncResult(buildTraceId, gradleVersion, startTimestamp, finishTimestamp)
+  ) : SyncResult(buildTraceId, gradleVersion, isolatedProjectsEnabled, startTimestamp, finishTimestamp)
 
   /**
    * A Bazel sync, from the JetBrains Bazel plugin (org.jetbrains.bazel).
@@ -85,5 +90,5 @@ internal sealed class SyncResult(
      */
     val outcome: String,
     val moduleCount: Int = -1,
-  ) : SyncResult(null, null, startTimestamp, finishTimestamp)
+  ) : SyncResult(null, null, false, startTimestamp, finishTimestamp)
 }
