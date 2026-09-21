@@ -1,5 +1,9 @@
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
 import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.InstrumentCodeTask
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
   alias(libs.plugins.kotlin)
@@ -80,6 +84,12 @@ intellijPlatform {
     }
   }
   pluginVerification {
+    // Default also fails on INTERNAL_API_USAGES. BazelSyncOutcomeTracker knowingly relies on the
+    // Bazel plugin's TaskId, which 2026.1 marks @ApiStatus.Internal.
+    failureLevel = listOf(
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
+    )
     ides {
       recommended()
       select {
@@ -126,6 +136,19 @@ tasks {
     }
   }
 
+  // instrumentCode and instrumentTestCode share the project's Ant builder and corrupt it when
+  // Gradle runs them in parallel. IPGP fixes this with the same lock in an unreleased version,
+  // see https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/2193
+  val instrumentCodeLock = gradle.sharedServices.registerIfAbsent(
+    "instrumentCodeLock",
+    InstrumentCodeLockService::class,
+  ) {
+    maxParallelUsages = 1
+  }
+  withType<InstrumentCodeTask>().configureEach {
+    usesService(instrumentCodeLock)
+  }
+
   buildPlugin {
     archiveBaseName = pluginName
   }
@@ -170,3 +193,5 @@ dependencyAnalysis {
     }
   }
 }
+
+abstract class InstrumentCodeLockService : BuildService<BuildServiceParameters.None>

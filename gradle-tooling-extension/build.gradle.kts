@@ -12,6 +12,13 @@ tasks.withType<JavaCompile>().configureEach {
   options.release = javaVersion.toInt()
 }
 
+intellijPlatform {
+  // Nothing here uses JetBrains annotations or forms, so there is nothing to instrument. It also
+  // avoids instrumentCode and instrumentTestCode racing on the shared Ant builder, see
+  // https://github.com/JetBrains/intellij-platform-gradle-plugin/issues/2193
+  instrumentCode = false
+}
+
 repositories {
   mavenCentral()
 
