@@ -28,6 +28,7 @@ internal class SyncState(private val project: Project) {
   private var gradleFinishTimestamp: Long = -1
   private var gradleVersion: GradleVersion? = null
   private var gradleProjectCount: Int = -1
+  private var isolatedProjectsEnabled: Boolean = false
   private var finishTimestamp: Long = -1
   private var phases: LinkedList<SyncPhase> = LinkedList(SyncPhase.entries)
 
@@ -39,6 +40,7 @@ internal class SyncState(private val project: Project) {
     gradleFinishTimestamp = -1
     gradleVersion = null
     gradleProjectCount = -1
+    isolatedProjectsEnabled = false
     finishTimestamp = -1
     phases = LinkedList(SyncPhase.entries)
   }
@@ -46,7 +48,7 @@ internal class SyncState(private val project: Project) {
   private fun logEvent(result: SyncResult) {
     when (result) {
       is SyncResult.SyncSucceeded -> thisLogger().run {
-        info("Sync ${project.buildTraceId} with $gradleVersion succeeded for ${project.name} (${gradleProjectCount} projects)")
+        info("Sync ${project.buildTraceId} with $gradleVersion succeeded for ${project.name} (${gradleProjectCount} projects, isolated projects: ${result.isolatedProjectsEnabled})")
         if (hasIncludedBuilds) info("Configure included builds duration: ${result.configureIncludedBuildsDuration}")
         info("Configure root project duration: ${result.configureRootProjectDuration}")
         info("Gradle execution duration: ${result.gradleExecutionDuration}")
@@ -76,6 +78,14 @@ internal class SyncState(private val project: Project) {
     synchronized(lock) {
       thisLogger().info("hasIncludedBuilds")
       hasIncludedBuilds = true
+    }
+  }
+
+  /** Called when the Gradle daemon reports which build features were active for the sync. */
+  fun syncBuildFeaturesResolved(isolatedProjectsEnabled: Boolean) {
+    synchronized(lock) {
+      thisLogger().info("syncBuildFeaturesResolved (isolatedProjectsEnabled=$isolatedProjectsEnabled)")
+      this.isolatedProjectsEnabled = isolatedProjectsEnabled
     }
   }
 
@@ -116,6 +126,7 @@ internal class SyncState(private val project: Project) {
         SyncResult.SyncSucceeded(
           project.buildTraceId,
           gradleVersion,
+          isolatedProjectsEnabled,
           startTimestamp,
           finishTimestamp,
           gradleProjectCount,
@@ -136,6 +147,7 @@ internal class SyncState(private val project: Project) {
         SyncResult.SyncCancelled(
           project.buildTraceId,
           gradleVersion,
+          isolatedProjectsEnabled,
           startTimestamp,
           finishTimestamp,
           phases.pollFirst()
@@ -152,6 +164,7 @@ internal class SyncState(private val project: Project) {
         SyncResult.SyncFailed(
           project.buildTraceId,
           gradleVersion,
+          isolatedProjectsEnabled,
           startTimestamp,
           finishTimestamp,
           phases.pollFirst(),

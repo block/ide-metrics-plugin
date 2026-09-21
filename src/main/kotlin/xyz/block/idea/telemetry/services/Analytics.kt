@@ -142,6 +142,7 @@ internal class Analytics(private val project: Project) {
         studioVersion = androidStudioVersion,
         agpVersion = null,
         gradleVersion = syncResult.gradleVersion?.version,
+        isolatedProjectsEnabled = syncResult.isolatedProjectsEnabled,
         intellijCoreVersion = intelliJCoreVersion,
         // prefix version with plugin ID so we can differentiate it from sa-toolkit metrics
         toolkitVersion = "$BLOCK_TELEMETRY_PLUGIN_ID-$blockPluginVersion",

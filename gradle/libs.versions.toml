@@ -19,6 +19,7 @@ wire = "5.3.11"
 [libraries]
 dependencyAnalysisPlugin = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version.ref = "dependencyAnalysis" }
 develocityGradlePlugin = { module = "com.gradle:develocity-gradle-plugin", version.ref = "develocity" }
+javaxInject = { module = "javax.inject:javax.inject", version = "1" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlinGradleBom = { module = "org.jetbrains.kotlin:kotlin-gradle-plugins-bom", version.ref = "kotlin" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }

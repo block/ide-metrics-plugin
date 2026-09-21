@@ -35,6 +35,7 @@ internal object GoogleFormsUrlParser {
     "TOOLKIT_VERSION" to SyncEvent::toolkitVersion,
     "AGP_VERSION" to SyncEvent::agpVersion,
     "GRADLE_VERSION" to SyncEvent::gradleVersion,
+    "ISOLATED_PROJECTS_ENABLED" to SyncEvent::isolatedProjectsEnabled.toStringMapping(),
     "INTELLIJ_CORE_VERSION" to SyncEvent::intellijCoreVersion,
     "USER_LDAP" to SyncEvent::userLdap,
     "OS_SYSTEM_ARCHITECTURE" to SyncEvent::osSystemArchitecture,
