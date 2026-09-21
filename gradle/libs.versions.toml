@@ -1,7 +1,7 @@
 [versions]
 dependencyAnalysis = "3.0.1"
 develocity = "4.1.1"
-intelliJPlatform = "2.7.0"
+intelliJPlatform = "2.18.1"
 java = "11"
 junit = "4.13.2"
 kotlin = "2.2.10"
