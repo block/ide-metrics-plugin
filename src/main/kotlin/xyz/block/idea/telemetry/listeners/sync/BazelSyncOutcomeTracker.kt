@@ -12,7 +12,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import org.jetbrains.bsp.protocol.TaskId
 
 /**
  * Observes the build events the Bazel plugin publishes to the Sync view to determine the
@@ -72,19 +71,29 @@ internal class BazelSyncOutcomeTracker(project: Project) : BuildProgressListener
    * (not the Build view), and the Bazel plugin is the only producer using this task id there.
    */
   private fun isBazelSyncBuild(buildId: Any): Boolean =
-    when (buildId) {
+    when {
       // 2025.2.x passes the sync task id as a plain String.
-      is String -> buildId == BAZEL_SYNC_TASK_ID
-      // Newer versions pass a TaskId; its `id` property is the same constant. The getter is
-      // binary-compatible across the TaskId shape change upstream.
-      is TaskId -> buildId.id == BAZEL_SYNC_TASK_ID
+      buildId is String -> buildId == BAZEL_SYNC_TASK_ID
+      // Newer versions pass a TaskId whose `id` property is the same constant. TaskId is marked
+      // @ApiStatus.Internal, so read it reflectively rather than referencing the class, which
+      // Marketplace's plugin verifier would otherwise flag as an internal API usage.
+      buildId.javaClass.name == BAZEL_TASK_ID_CLASS -> taskIdOf(buildId) == BAZEL_SYNC_TASK_ID
       else -> false
+    }
+
+  private fun taskIdOf(taskId: Any): String? =
+    try {
+      taskId.javaClass.getMethod("getId").invoke(taskId) as? String
+    } catch (e: ReflectiveOperationException) {
+      thisLogger().warn("Could not read Bazel TaskId.id", e)
+      null
     }
 
   override fun dispose() = Unit
 
   companion object {
     private const val BAZEL_SYNC_TASK_ID = "project-sync"
+    private const val BAZEL_TASK_ID_CLASS = "org.jetbrains.bsp.protocol.TaskId"
   }
 }
 

@@ -84,10 +84,10 @@ intellijPlatform {
     }
   }
   pluginVerification {
-    // Default also fails on INTERNAL_API_USAGES. BazelSyncOutcomeTracker knowingly relies on the
-    // Bazel plugin's TaskId, which 2026.1 marks @ApiStatus.Internal.
+    // Marketplace moderation flags internal API usages, so fail locally on them too.
     failureLevel = listOf(
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.INTERNAL_API_USAGES,
       VerifyPluginTask.FailureLevel.OVERRIDE_ONLY_API_USAGES,
     )
     ides {
